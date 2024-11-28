@@ -189,7 +189,7 @@
     <main>
         <div id="totalPointsDiv">
             <h2 class="textCenter">Total Points: <span id="totalPoints"></span></h2>
-            <button style="padding: 2px;">Reset total</button>
+            <button id="resetTotalBtn" class="btn">Reset Total</button>
         </div>
         <div id="containersDiv">
             <div class="container" id="chapterListContainer">
@@ -776,6 +776,23 @@ function updatePoints() {
             // Remove the reward
             deleteReward(index);
         }
+
+        // Function to reset total points and update the display
+function resetTotalPoints() {
+    // Reset the total points in localStorage
+    localStorage.setItem('totalPoints', 0);
+
+    // Update the UI to show the reset total points (0)
+    updateTotalPoints();
+}
+
+// Function to update the displayed total points
+function updateTotalPoints() {
+    const totalPoints = localStorage.getItem('totalPoints') || 0; // Default to 0 if not set
+    document.getElementById('totalPoints').textContent = totalPoints;
+}
+
+        document.getElementById('resetTotalBtn').addEventListener('click', resetTotalPoints);
 
         // Initialize the table on page load
         window.onload = () => {
