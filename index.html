@@ -140,6 +140,36 @@
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 500;
         }
+        table {
+            width: 100%;
+            margin-top: 10px;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        .btn-delete, .btn-edit {
+            cursor: pointer;
+            padding: 5px;
+            margin: 5px;
+        }
+
+        .btn-delete {
+            background-color: red;
+            color: white;
+        }
+
+        .btn-edit {
+            background-color: orange;
+            color: white;
+        }
 
     </style>
 </head>
@@ -214,6 +244,38 @@
         <button id="closeCompletionPopupBtn" class="btn">Close</button>
     </div>
 
+  <!-- Reward Chart Popup -->
+  <div class="popup-overlay" id="rewardChartOverlay"></div>
+  <div class="popup-form" id="rewardChartPopup">
+      <h3>Reward Chart</h3>
+      <label for="rewardType">Reward Type:</label>
+      <select id="rewardType">
+          <option value="points">Points</option>
+          <option value="sub-lesson">Sub-Lesson</option>
+          <option value="chapter">Chapter</option>
+      </select><br>
+      <label for="rewardCount">Count:</label>
+      <input type="number" id="rewardCount" required><br>
+      <label for="rewardValue">Reward Value:</label>
+      <textarea type="text" height="30px" id="rewardValue" required></textarea><br>
+      <button id="addRewardBtn" class="btn">Add Reward</button>
+      <button id="closeRewardChartBtn" class="btn">Close</button>
+
+      <!-- Reward Chart Table -->
+      <table id="rewardChartTable">
+          <thead>
+              <tr>
+                  <th>Type</th>
+                  <th>Count</th>
+                  <th>Reward</th>
+                  <th>Actions</th>
+              </tr>
+          </thead>
+          <tbody id="rewardChartBody">
+              <!-- Dynamic content here -->
+          </tbody>
+      </table>
+  </div>
 
     <script>
         let chapters = JSON.parse(localStorage.getItem('chapters')) || [];
@@ -241,7 +303,11 @@
         
         function updateChaptersList() {
     chaptersList.innerHTML = '<h3>Chapters List</h3>'; // Reset chapter list before updating
-    chapters.forEach(chapter => {
+    
+    // Sort the chapters array in descending order based on chapter.id
+    const sortedChapters = chapters.sort((a, b) => b.id - a.id); // Sort in descending order
+    
+    sortedChapters.forEach(chapter => {
         const chapterElement = document.createElement('div');
         chapterElement.classList.add('chapter-container');
         chapterElement.innerHTML = `
@@ -535,7 +601,7 @@ function calculateExtraPoints(chapter) {
         // Finished after both Braintor and User deadlines (Penalize)
         const exceededTime = finishedAt - userDeadline;
         const penalty = Math.ceil(exceededTime / (1000 * 60 * 60 * 24)) * baseExtraPoints * 0.25; // 10% penalty per day after the user deadline
-        extraPoints = -penalty;
+        extraPoints = baseExtraPoints - penalty;
     }
 
     // Ensure the extra points cannot be negative
@@ -565,6 +631,12 @@ function updatePoints() {
         function closePopup() {
             chapterForm.style.display = 'none';
             popupOverlay.style.display = 'none';
+
+            document.getElementById('chapterName').value = '';
+            document.getElementById('totalPages').value = '';
+            document.getElementById('totalSubLessons').value = '';
+            document.getElementById('difficulty').value = '';
+            document.getElementById('deadline').value = '';
         }
 
         function calculateDeadline(totalPages, totalSubLessons, difficulty) {
@@ -624,6 +696,84 @@ function updatePoints() {
     // Step 3: Update the chapters list on the page
     updateChaptersList();
 }
+
+ // Show Reward Chart Popup
+ document.getElementById('rewardChartBtn').addEventListener('click', () => {
+            document.getElementById('rewardChartOverlay').style.display = 'block';
+            document.getElementById('rewardChartPopup').style.display = 'block';
+        });
+
+        // Close Reward Chart Popup
+        document.getElementById('closeRewardChartBtn').addEventListener('click', () => {
+            document.getElementById('rewardChartOverlay').style.display = 'none';
+            document.getElementById('rewardChartPopup').style.display = 'none';
+        });
+
+        // Add a new reward to the chart
+        document.getElementById('addRewardBtn').addEventListener('click', () => {
+            const type = document.getElementById('rewardType').value;
+            const count = document.getElementById('rewardCount').value;
+            const rewardValue = document.getElementById('rewardValue').value;
+
+            if (count && rewardValue) {
+                const reward = { type, count, reward: rewardValue };
+
+                // Save to localStorage
+                const rewards = JSON.parse(localStorage.getItem('rewardChart')) || [];
+                rewards.push(reward);
+                localStorage.setItem('rewardChart', JSON.stringify(rewards));
+
+                // Update the table
+                updateRewardChartTable();
+            }
+        });
+
+        // Update the reward chart table
+        function updateRewardChartTable() {
+            const rewards = JSON.parse(localStorage.getItem('rewardChart')) || [];
+            const tableBody = document.getElementById('rewardChartBody');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            rewards.forEach((reward, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${reward.type}</td>
+                    <td>${reward.count}</td>
+                    <td>${reward.reward}</td>
+                    <td>
+                        <button class="btn-edit" onclick="editReward(${index})">Edit</button>
+                        <button class="btn-delete" onclick="deleteReward(${index})">Delete</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Delete a reward
+        function deleteReward(index) {
+            const rewards = JSON.parse(localStorage.getItem('rewardChart')) || [];
+            rewards.splice(index, 1);
+            localStorage.setItem('rewardChart', JSON.stringify(rewards));
+            updateRewardChartTable();
+        }
+
+        // Edit a reward
+        function editReward(index) {
+            const rewards = JSON.parse(localStorage.getItem('rewardChart')) || [];
+            const reward = rewards[index];
+
+            document.getElementById('rewardType').value = reward.type;
+            document.getElementById('rewardCount').value = reward.count;
+            document.getElementById('rewardValue').value = reward.reward;
+
+            // Remove the reward
+            deleteReward(index);
+        }
+
+        // Initialize the table on page load
+        window.onload = () => {
+            updateRewardChartTable();
+        };
 
         // Initialize
         updateChaptersList();
