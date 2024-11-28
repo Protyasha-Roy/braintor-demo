@@ -1,0 +1,37 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+#logoDiv {
+    width: 50px;
+    height: 50px;
+}
+
+#logoImg {
+    width: 100%;
+}
+
+.orgText{
+    color: orangered;
+}
+
+nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+}
+
+.textCenter {
+    text-align: center;
+}
+
+
+h1 {
+    font-size: 30px;
+}
+main {
+    margin-top: 10px;
+}
