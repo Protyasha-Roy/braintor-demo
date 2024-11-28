@@ -167,9 +167,9 @@
             <div class="container" id="deadlineTimerContainer">
                 <h3>Deadline timer</h3>
                 <h4 class="deadlineLabel">Deadline(Braintor):</h4>
-                <p class="deadlineTime" id="braintorTimer">01:35:49</p>
+                <p class="deadlineTime" id="braintorTimer"></p>
                 <h4 class="deadlineLabel">Deadline(User):</h4>
-                <p class="deadlineTime" id="userTimer">01:35:49</p>
+                <p class="deadlineTime" id="userTimer"></p>
             </div>
 
             <div class="container" id="chapterDetailsContainer">
@@ -259,6 +259,39 @@
     });
 }
 
+submitChapterBtn.addEventListener('click', () => {
+    const chapterName = document.getElementById('chapterName').value;
+    const totalPages = parseInt(document.getElementById('totalPages').value);
+    const totalSubLessons = parseInt(document.getElementById('totalSubLessons').value);
+    const difficulty = document.getElementById('difficulty').value;
+    const userDeadline = new Date(document.getElementById('deadline').value);
+
+    // Calculate the program-generated deadline
+    const braintorDeadline = calculateDeadline(totalPages, totalSubLessons, difficulty);
+
+    const pointsPerSubLesson = calculatePoints(difficulty, totalPages, totalSubLessons);
+    const subLessons = Array.from({ length: totalSubLessons }, (_, index) => ({
+        name: `Sub-lesson ${index + 1}`,
+        marked: false
+    }));
+
+    const chapter = {
+        id: chapters.length + 1,
+        name: chapterName,
+        difficulty,
+        totalPages,
+        totalSubLessons,
+        pointsPerSubLesson,
+        subLessons,
+        userDeadline, // User-provided deadline
+        braintorDeadline // Calculated deadline
+    };
+
+    chapters.push(chapter);
+    localStorage.setItem('chapters', JSON.stringify(chapters));
+    updateChaptersList();
+    closePopup();
+});
     let selectedChapterId = null; // Track the selected chapter
 
     // Function to update the timer based on the selected chapter
@@ -357,7 +390,7 @@ closeCompletionPopupBtn.addEventListener('click', () => {
             <p>Total pages: <span>${chapter.totalPages}</span></p>
             <p>Total sub-lessons: <span>${chapter.totalSubLessons}</span></p>
             <p>Sub-lessons left: <span>${chapter.subLessons.filter(sl => !sl.marked).length}</span></p>
-            <p>Deadline(user): <span>${chapter.userDeadline.toLocaleString()}</span></p>
+            <p>Deadline(user): <span>${new Date(chapter.userDeadline).toLocaleString()}</span></p>
             <p>Deadline(Braintor): <span>${new Date(chapter.braintorDeadline).toLocaleString()}</span></p>
         `;
     }
@@ -429,7 +462,7 @@ closeCompletionPopupBtn.addEventListener('click', () => {
         <p>Total pages: <span>${chapter.totalPages}</span></p>
         <p>Total sub-lessons: <span>${chapter.totalSubLessons}</span></p>
         <p>Sub-lessons left: <span>${chapter.subLessons.filter(sl => !sl.marked).length}</span></p>
-        <p>Deadline(user): <span>${chapter.userDeadline.toLocaleString()}</span></p>
+        <p>Deadline(user): <span>${new Date(chapter.userDeadline).toLocaleString()}</span></p>
         <p>Deadline(Braintor): <span>${new Date(chapter.braintorDeadline).toLocaleString()}</span></p>
     `;
 }
@@ -512,40 +545,6 @@ function updatePoints() {
 
     return braintorDeadline;
 }
-
-submitChapterBtn.addEventListener('click', () => {
-    const chapterName = document.getElementById('chapterName').value;
-    const totalPages = parseInt(document.getElementById('totalPages').value);
-    const totalSubLessons = parseInt(document.getElementById('totalSubLessons').value);
-    const difficulty = document.getElementById('difficulty').value;
-    const userDeadline = new Date(document.getElementById('deadline').value);
-
-    // Calculate the program-generated deadline
-    const braintorDeadline = calculateDeadline(totalPages, totalSubLessons, difficulty);
-
-    const pointsPerSubLesson = calculatePoints(difficulty, totalPages, totalSubLessons);
-    const subLessons = Array.from({ length: totalSubLessons }, (_, index) => ({
-        name: `Sub-lesson ${index + 1}`,
-        marked: false
-    }));
-
-    const chapter = {
-        id: chapters.length + 1,
-        name: chapterName,
-        difficulty,
-        totalPages,
-        totalSubLessons,
-        pointsPerSubLesson,
-        subLessons,
-        userDeadline, // User-provided deadline
-        braintorDeadline // Calculated deadline
-    };
-
-    chapters.push(chapter);
-    localStorage.setItem('chapters', JSON.stringify(chapters));
-    updateChaptersList();
-    closePopup();
-});
 
 
         closePopupBtn.addEventListener('click', closePopup);
