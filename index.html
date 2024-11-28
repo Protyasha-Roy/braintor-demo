@@ -453,6 +453,14 @@ closeCompletionPopupBtn.addEventListener('click', () => {
         chapterStatus = "Finished";
         statusColor = "green";
 
+         // Handle finishing the chapter
+         const finishingTime = new Date();
+        chapter.finishedAt = finishingTime; // Record finishing time
+        localStorage.setItem("chapters", JSON.stringify(chapters));
+
+        console.log(chapters)
+
+
         // Show the completion popup if the chapter is finished
         showCompletionPopup(chapter);
     }
@@ -490,7 +498,9 @@ function showFinishedPopup(chapter) {
 
 // Function to calculate extra points when a chapter is completed
 function calculateExtraPoints(chapter) {
-    // Points based on total pages, total sub-lessons, and difficulty level
+    // Log the chapter to debug
+    console.log(chapter);
+
     const difficultyMultiplier = {
         'meh': 1,
         'easy': 1.2,
@@ -499,9 +509,44 @@ function calculateExtraPoints(chapter) {
         'extreme': 2
     };
 
+    // Calculate the base multiplier based on the difficulty
     const multiplier = difficultyMultiplier[chapter.difficulty] || 1;
-    return Math.round((chapter.totalPages / chapter.totalSubLessons) * multiplier);
+
+    // Calculate the base extra points based on total pages, total sub-lessons, and difficulty
+    const baseExtraPoints = Math.round((chapter.totalPages / chapter.totalSubLessons) * multiplier);
+
+    // Convert string dates into Date objects
+    const braintorDeadline = new Date(chapter.braintorDeadline);
+    const userDeadline = new Date(chapter.userDeadline);
+    const finishedAt = new Date(chapter.finishedAt);
+
+    let extraPoints = 0;
+
+    // Compare finishedAt with braintorDeadline and userDeadline to adjust extra points
+    if (finishedAt <= braintorDeadline && finishedAt <= userDeadline) {
+        // Finished on or before the Braintor deadline (Full points)
+        extraPoints = baseExtraPoints;
+    } else if (finishedAt > braintorDeadline && finishedAt <= userDeadline) {
+        // Finished after Braintor deadline but before or on the User deadline (Half points)
+        extraPoints = Math.round(baseExtraPoints / 2);
+    } else if(finishedAt > userDeadline && finishedAt <= braintorDeadline) {
+        extraPoints = baseExtraPoints;
+    } else {
+        // Finished after both Braintor and User deadlines (Penalize)
+        const exceededTime = finishedAt - userDeadline;
+        const penalty = Math.ceil(exceededTime / (1000 * 60 * 60 * 24)) * baseExtraPoints * 0.25; // 10% penalty per day after the user deadline
+        extraPoints = -penalty;
+    }
+
+    // Ensure the extra points cannot be negative
+    extraPoints = Math.max(extraPoints);
+
+    // Log the final extra points to debug
+    console.log("Calculated Extra Points:", extraPoints);
+
+    return extraPoints;
 }
+
 
 
 
