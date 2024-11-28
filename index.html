@@ -48,7 +48,7 @@
             display: flex;
             flex-direction: row;
             justify-content: space-between;
-            padding: 30px;
+            padding: 20px;
         }
 
         .container {
@@ -162,13 +162,18 @@
         }
 
         .btn-delete {
-            background-color: red;
-            color: white;
+            
         }
 
         .btn-edit {
-            background-color: orange;
-            color: white;
+           
+        }
+
+        #totalPointsDiv{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
     </style>
@@ -182,7 +187,10 @@
     </nav>
 
     <main>
-        <h2 class="textCenter">Total Points: <span id="totalPoints"></span></h2>
+        <div id="totalPointsDiv">
+            <h2 class="textCenter">Total Points: <span id="totalPoints"></span></h2>
+            <button style="padding: 2px;">Reset total</button>
+        </div>
         <div id="containersDiv">
             <div class="container" id="chapterListContainer">
                 <div class="contentRow">
@@ -524,8 +532,6 @@ closeCompletionPopupBtn.addEventListener('click', () => {
         chapter.finishedAt = finishingTime; // Record finishing time
         localStorage.setItem("chapters", JSON.stringify(chapters));
 
-        console.log(chapters)
-
 
         // Show the completion popup if the chapter is finished
         showCompletionPopup(chapter);
@@ -565,7 +571,6 @@ function showFinishedPopup(chapter) {
 // Function to calculate extra points when a chapter is completed
 function calculateExtraPoints(chapter) {
     // Log the chapter to debug
-    console.log(chapter);
 
     const difficultyMultiplier = {
         'meh': 1,
@@ -608,7 +613,6 @@ function calculateExtraPoints(chapter) {
     extraPoints = Math.max(extraPoints);
 
     // Log the final extra points to debug
-    console.log("Calculated Extra Points:", extraPoints);
 
     return extraPoints;
 }
@@ -725,6 +729,9 @@ function updatePoints() {
 
                 // Update the table
                 updateRewardChartTable();
+                document.getElementById('rewardType').value = '';
+                document.getElementById('rewardCount').value = '';
+                document.getElementById('rewardValue').value = '';
             }
         });
 
