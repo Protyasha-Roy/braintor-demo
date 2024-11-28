@@ -245,7 +245,10 @@
         const chapterElement = document.createElement('div');
         chapterElement.classList.add('chapter-container');
         chapterElement.innerHTML = `
-            <button class="btn toggle-button" onclick="selectChapter(${chapter.id})">${chapter.name}</button>
+            <div style="display: flex; gap: 10px; cursor: pointer;">
+                <button class="btn toggle-button" onclick="selectChapter(${chapter.id})">${chapter.name}</button>
+                <p style="color: red; text-decoration:underline;" onclick="deleteChapter(${chapter.id})">delete</p>
+            </div>
             <div class="sub-lesson" id="subLessons-${chapter.id}">
                 ${chapter.subLessons.map((subLesson, index) => `
                     <div class="subLessonName ${subLesson.marked ? 'marked' : ''}" 
@@ -565,6 +568,18 @@ function updatePoints() {
             }
             return Math.round(Math.min(((totalPages/totalSubLessons) * multiplier)));
         }
+
+        function deleteChapter(chapterId) {
+    // Step 1: Remove the chapter from the chapters array
+    chapters = chapters.filter(chapter => chapter.id !== chapterId);
+
+    // Step 2: Update localStorage with the new chapters array
+    localStorage.setItem('chapters', JSON.stringify(chapters));
+
+    // Step 3: Update the chapters list on the page
+    updateChaptersList();
+}
+
 
         // Initialize
         updateChaptersList();
